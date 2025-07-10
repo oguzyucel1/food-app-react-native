@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, View } from 'react-native'
 
-const cart = () => {
+const Cart = () => {
   return (
     <View>
       <Text>cart</Text>
@@ -9,4 +9,4 @@ const cart = () => {
   )
 }
 
-export default cart
+export default Cart
