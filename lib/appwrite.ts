@@ -1,12 +1,13 @@
 import { CreateUserParams, SignInParams } from "@/type";
 import { Account, Avatars, Client, Databases, ID, Query } from "react-native-appwrite";
+import "react-native-url-polyfill/auto";
 
 export const appwriteConfig = {
-  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
+  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1",
   platform : "com.oguzyucel.foodorderingapp",
-  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
-  databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
-  uesrCollectionId: "686ec716003002ac6bd1"
+  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID || "your_project_id_here",
+  databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID || "your_database_id_here",
+  userCollectionId: "686ec716003002ac6bd1"
 }
 
 export const client = new Client();
@@ -34,7 +35,7 @@ export const createUser = async ({email,password,name} : CreateUserParams) => {
 
    return await database.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.uesrCollectionId,
+      appwriteConfig.userCollectionId,
       ID.unique(),
       {
         accountId: newAccount.$id,
@@ -69,7 +70,7 @@ export const getCurrentUser = async () => {
 
      const currentUser = await database.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.uesrCollectionId,
+      appwriteConfig.userCollectionId,
       [Query.equal('accountId', currentAccount.$id)]
      )
 

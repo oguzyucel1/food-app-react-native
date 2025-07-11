@@ -1,5 +1,6 @@
 import CardButton from "@/components/CardButton";
 import { images, offers } from "@/constants";
+import useAuthStore from "@/store/auth.store";
 import cn from "clsx";
 import { Fragment } from "react";
 import {
@@ -13,6 +14,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
+  const { user } = useAuthStore();
+  // Uncomment the line below to log user details
+  // console.log("User:", JSON.stringify(user, null, 2));
   return (
     <SafeAreaView className="bg-white flex-1">
       <FlatList
@@ -78,6 +82,9 @@ export default function Index() {
             <CardButton />
           </View>
         )}
+        // ListFooterComponent={() => (
+
+        // )}
       />
     </SafeAreaView>
   );
