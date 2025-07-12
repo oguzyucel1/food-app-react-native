@@ -1,8 +1,10 @@
 import CardButton from "@/components/CardButton";
+import Filter from "@/components/Filter";
 import MenuCard from "@/components/MenuCard";
+import SearchBar from "@/components/SearchBar";
 import { getCategories, getMenu } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
-import { MenuItem } from "@/type";
+import { Category, MenuItem } from "@/type";
 import cn from "clsx";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
@@ -29,6 +31,24 @@ const Search = () => {
 
   return (
     <SafeAreaView className="bg-white h-full">
+      <View className="my-5 gap-5 px-5">
+        <View className="flex-between flex-row w-full">
+          <View className="flex-start">
+            <Text className="small-bold uppercase text-primary pb-2">
+              Search
+            </Text>
+            <View className="flex-start flex-row gap-x-1 mt:0.5">
+              <Text className="paragraph-semibold text-dark-100">
+                Find your favorite food
+              </Text>
+            </View>
+          </View>
+          <CardButton />
+        </View>
+        <SearchBar />
+        <Filter categories={categories as Category[]} />
+      </View>
+
       <FlatList
         data={data}
         renderItem={({ item, index }) => {
@@ -36,7 +56,7 @@ const Search = () => {
           return (
             <View
               className={cn(
-                "flex-1 max-w-[48%]",
+                "flex-1 max-w-[48%] mt-9",
                 !isFirstRightColItem ? "mt-10" : "mt-0"
               )}
             >
@@ -48,27 +68,6 @@ const Search = () => {
         numColumns={2}
         columnWrapperClassName="gap-7"
         contentContainerClassName="gap-7 px-5 pb-32"
-        ListHeaderComponent={() => (
-          <View className="my-5 gap-5">
-            <View className="flex-between flex-row w-full">
-              <View className="flex-start">
-                <Text className="small-bold uppercase text-primary">
-                  Search
-                </Text>
-                <View className="flex-start flex-row gap-x-1 mt:0.5">
-                  <Text className="paragraph-semibold text-dark-100">
-                    Find your favorite food
-                  </Text>
-                </View>
-              </View>
-              <CardButton />
-            </View>
-
-            <Text> Searach Input</Text>
-
-            <Text> Filter</Text>
-          </View>
-        )}
         ListEmptyComponent={() => !loading && <Text>No Results</Text>}
       />
     </SafeAreaView>

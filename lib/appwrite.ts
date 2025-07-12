@@ -103,7 +103,7 @@ export const getCurrentUser = async () => {
 export const getMenu = async ({ category, query }: GetMenuParams) => {
   try {
     const queries: string[] = [];
-    if (category) queries.push(Query.equal("category", category));
+    if (category) queries.push(Query.equal("categories", category));
     if (query) queries.push(Query.search("name", query));
 
     const menus = await database.listDocuments(
@@ -119,11 +119,11 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
 
 export const getCategories = async () => {
   try {
-    const categories = await database.listDocuments(
+    const Categories = await database.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.categoriesCollectionId
     );
-    return categories.documents;
+    return Categories.documents;
   } catch (e) {
     throw new Error(e as string);
   }
