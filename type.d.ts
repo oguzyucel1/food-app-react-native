@@ -106,3 +106,11 @@ interface GetMenuParams {
   category: string;
   query: string;
 }
+
+export interface Customization {
+  $id: string;
+  name: string;
+  price: number;
+  type: "topping" | "side";
+  image_url?: string;
+}

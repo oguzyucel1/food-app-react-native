@@ -1,217 +1,312 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import cn from "clsx";
-import { router } from "expo-router";
-import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { appwriteConfig, getCurrentUser, logoutUser } from "@/lib/appwrite";
+import useAuthStore from "@/store/auth.store";
+import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { router, useNavigation } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-// Mock user data - replace with your actual user data store
-const mockUserData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "+90 555 123 4567",
-  address: "123 Food Street, Istanbul",
-  imageUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-};
+// Kullanıcı tipi tanımlama
+interface User {
+  $id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  imageUrl?: string;
+}
 
-const ProfileSection = ({
-  title,
+const ProfileItem = ({
   icon,
+  title,
   value,
-  action,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  value: string;
-  action?: () => void;
-}) => {
-  return (
-    <View className="flex-row items-center justify-between bg-white p-4 rounded-2xl mb-3 shadow-sm">
-      <View className="flex-row items-center">
-        <View className="bg-amber-50 p-2 rounded-full mr-3">{icon}</View>
-        <View>
-          <Text className="text-gray-400 text-xs">{title}</Text>
-          <Text className="text-gray-800 font-medium">{value}</Text>
-        </View>
-      </View>
-      {action && (
-        <TouchableOpacity onPress={action}>
-          <Ionicons name="chevron-forward" size={20} color="#FE8C00" />
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-};
-
-const ActionButton = ({
-  title,
-  icon,
+  showArrow = false,
   onPress,
-  danger = false,
 }: {
-  title: string;
   icon: React.ReactNode;
-  onPress: () => void;
-  danger?: boolean;
+  title: string;
+  value: string;
+  showArrow?: boolean;
+  onPress?: () => void;
 }) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={cn(
-        "flex-row items-center p-4 rounded-2xl mb-3 shadow-sm",
-        danger ? "bg-red-50" : "bg-white"
-      )}
+      className="flex-row items-center mb-5 bg-white p-4 rounded-2xl"
+      activeOpacity={onPress ? 0.7 : 1}
+      style={styles.cardShadow}
     >
-      <View
-        className={cn(
-          "p-2 rounded-full mr-3",
-          danger ? "bg-red-100" : "bg-amber-50"
-        )}
-      >
+      <View className="w-10 h-10 bg-amber-50 rounded-xl items-center justify-center mr-4">
         {icon}
       </View>
-      <Text
-        className={cn("font-medium", danger ? "text-red-600" : "text-gray-800")}
-      >
-        {title}
-      </Text>
+      <View className="flex-1">
+        <Text className="text-gray-500 text-xs mb-1">{title}</Text>
+        <Text className="text-gray-800 font-semibold">{value}</Text>
+      </View>
+      {showArrow && (
+        <View className="bg-gray-100 w-8 h-8 items-center justify-center rounded-full">
+          <Ionicons name="chevron-forward" size={18} color="#666" />
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
 
 const Profile = () => {
-  const { name, email, phone, address, imageUrl } = mockUserData;
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, setIsAuthenticated } = useAuthStore();
+  const navigation = useNavigation();
+
+  // Back button ve profil başlığı için
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: "Profile",
+      headerTitleAlign: "center",
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <TouchableOpacity>
+          <Ionicons name="search" size={24} color="#000" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  // Kullanıcı bilgilerini yükle
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser({
+            $id: currentUser.$id,
+            name: currentUser.name,
+            email: currentUser.email,
+            phone: currentUser.phone || "+1 555 123 4567",
+            address:
+              currentUser.address || "123 Main Street, Springfield, IL 62704",
+            imageUrl: currentUser.profileImageUrl
+              ? `${currentUser.profileImageUrl}?project=${appwriteConfig.projectId}`
+              : "https://ui-avatars.com/api/?name=" +
+                encodeURIComponent(currentUser.name),
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUserData();
+    } else {
+      router.replace("/sign-in");
+    }
+  }, [isAuthenticated]);
 
   const handleEditProfile = () => {
-    // Navigate to edit profile screen
-    // router.push('/edit-profile');
-    console.log("Edit profile");
+    router.push("/edit-profile");
   };
 
-  const handleAddressChange = () => {
-    // Navigate to address management
-    console.log("Change address");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setIsAuthenticated(false);
+      router.replace("/sign-in");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
-  const handlePaymentMethods = () => {
-    // Navigate to payment methods
-    console.log("Payment methods");
-  };
+  if (loading) {
+    return (
+      <View className="flex-1 bg-gray-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#FE8C00" />
+        <Text className="mt-4 text-gray-600">Loading profile...</Text>
+      </View>
+    );
+  }
 
-  const handleOrderHistory = () => {
-    // Navigate to order history
-    console.log("Order history");
-  };
-
-  const handleHelpCenter = () => {
-    // Navigate to help center
-    console.log("Help center");
-  };
-
-  const handleLogout = () => {
-    router.replace("/sign-in");
-  };
+  // Login required için modern versiyon:
+  if (!user) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center p-6">
+        <View className="bg-amber-50 rounded-full p-6 mb-8">
+          <Ionicons name="person" size={60} color="#FE8C00" />
+        </View>
+        <Text className="text-2xl font-bold text-gray-800 mb-3">
+          Oturum Açın
+        </Text>
+        <Text className="text-gray-500 mb-10 text-center">
+          Profilinize erişmek için lütfen oturum açın
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.replace("/sign-in")}
+          className="bg-amber-500 py-4 px-8 rounded-xl w-full items-center"
+          style={styles.buttonShadow}
+        >
+          <Text className="text-white font-bold text-lg">Giriş Yap</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1 p-5">
-        {/* Header */}
-        <View className="flex-row justify-between items-center mb-8">
-          <View>
-            <Text className="text-2xl font-bold text-gray-800">My Profile</Text>
-            <Text className="text-gray-500">Personal information</Text>
-          </View>
+    <View className="flex-1 bg-gray-50">
+      {/* Profile Header - Gradient Background */}
+      <View
+        className="bg-amber-500 pt-10 pb-16 rounded-b-[40px]"
+        style={styles.headerShadow}
+      >
+        <View className="px-5 flex-row justify-between items-center">
+          <Text className="text-white text-2xl font-bold">Profilim</Text>
           <TouchableOpacity
             onPress={handleEditProfile}
-            className="bg-amber-500 p-2 rounded-full"
+            className="bg-white/25 p-2 rounded-xl"
           >
-            <Ionicons name="pencil" size={18} color="white" />
+            <Ionicons name="pencil" size={20} color="white" />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Profile Card */}
-        <View className="bg-white p-5 rounded-2xl mb-6 shadow-sm">
-          <View className="flex-row items-center">
-            <Image
-              source={{ uri: imageUrl }}
-              className="w-20 h-20 rounded-full mr-4"
-            />
-            <View>
-              <Text className="text-xl font-bold text-gray-800">{name}</Text>
-              <Text className="text-gray-500">{email}</Text>
-            </View>
+      {/* Avatar - Positioned on the header */}
+      <View className="items-center mt-[-50]" style={styles.avatarContainer}>
+        <View className="bg-white p-1 rounded-full shadow-lg">
+          <Image
+            source={{ uri: user.imageUrl }}
+            className="w-24 h-24 rounded-full"
+          />
+          <View className="absolute bottom-1 right-1 bg-green-500 w-6 h-6 rounded-full border-2 border-white items-center justify-center">
+            <Ionicons name="checkmark" size={14} color="white" />
           </View>
         </View>
+        <Text className="text-lg font-bold mt-3">{user.name}</Text>
+        <Text className="text-gray-500 text-sm">{user.email}</Text>
+      </View>
 
-        {/* Personal Information */}
-        <Text className="text-lg font-semibold mb-3 text-gray-800">
-          Personal Information
+      {/* Profile Details */}
+      <ScrollView
+        className="flex-1 px-5 mt-4"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <Text className="text-lg font-bold mb-4 ml-2 text-gray-700">
+          Kişisel Bilgiler
         </Text>
 
-        <ProfileSection
-          title="Full Name"
+        <ProfileItem
           icon={<Ionicons name="person" size={20} color="#FE8C00" />}
-          value={name}
-          action={handleEditProfile}
+          title="Tam Ad"
+          value={user.name}
+          showArrow
+          onPress={handleEditProfile}
         />
 
-        <ProfileSection
-          title="Email"
+        <ProfileItem
           icon={<Ionicons name="mail" size={20} color="#FE8C00" />}
-          value={email}
-          action={handleEditProfile}
+          title="E-posta Adresi"
+          value={user.email}
+          showArrow
         />
 
-        <ProfileSection
-          title="Phone Number"
+        <ProfileItem
           icon={<Ionicons name="call" size={20} color="#FE8C00" />}
-          value={phone}
-          action={handleEditProfile}
+          title="Telefon Numarası"
+          value={user.phone || "Telefon eklenmedi"}
+          showArrow
         />
 
-        <ProfileSection
-          title="Delivery Address"
+        <ProfileItem
           icon={<Ionicons name="location" size={20} color="#FE8C00" />}
-          value={address}
-          action={handleAddressChange}
+          title="Ev Adresi"
+          value={user.address || "Adres eklenmedi"}
+          showArrow
         />
 
-        {/* Account Actions */}
-        <Text className="text-lg font-semibold mt-6 mb-3 text-gray-800">
-          Account
+        <Text className="text-lg font-bold mt-4 mb-4 ml-2 text-gray-700">
+          Hesap İşlemleri
         </Text>
 
-        <ActionButton
-          title="Payment Methods"
-          icon={<Ionicons name="card" size={20} color="#FE8C00" />}
-          onPress={handlePaymentMethods}
+        <ProfileItem
+          icon={<Ionicons name="settings-outline" size={20} color="#FE8C00" />}
+          title="Hesap Ayarları"
+          value="Bildirim, gizlilik ve güvenlik"
+          showArrow
         />
 
-        <ActionButton
-          title="Order History"
-          icon={
-            <MaterialCommunityIcons name="history" size={20} color="#FE8C00" />
-          }
-          onPress={handleOrderHistory}
+        <ProfileItem
+          icon={<Ionicons name="card-outline" size={20} color="#FE8C00" />}
+          title="Ödeme Yöntemleri"
+          value="Kayıtlı kartlarınız ve hesaplarınız"
+          showArrow
         />
 
-        <ActionButton
-          title="Help Center"
-          icon={<Ionicons name="help-circle" size={20} color="#FE8C00" />}
-          onPress={handleHelpCenter}
+        <ProfileItem
+          icon={<FontAwesome5 name="history" size={18} color="#FE8C00" />}
+          title="Sipariş Geçmişi"
+          value="Önceki siparişlerinizi görüntüleyin"
+          showArrow
         />
 
-        <ActionButton
-          title="Logout"
-          icon={<Ionicons name="log-out" size={20} color="#FF3B30" />}
+        {/* Logout Button */}
+        <TouchableOpacity
           onPress={handleLogout}
-          danger
-        />
-
-        <View className="h-20" />
+          className="mt-6 mb-40 py-4 bg-white rounded-2xl flex-row items-center justify-center "
+          style={styles.cardShadow}
+        >
+          <MaterialIcons name="logout" size={22} color="#FF3B30" />
+          <Text className="text-red-500 font-semibold text-lg ml-2">
+            Çıkış Yap
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  cardShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  headerShadow: {
+    shadowColor: "#FE8C00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  avatarContainer: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    zIndex: 2,
+  },
+  buttonShadow: {
+    shadowColor: "#FE8C00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+});
 
 export default Profile;

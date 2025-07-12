@@ -128,3 +128,31 @@ export const getCategories = async () => {
     throw new Error(e as string);
   }
 };
+
+// Appwrite'dan tek bir menü öğesi getir
+export const getMenuItem = async (id: string) => {
+  try {
+    const response = await database.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.menuCollectionId,
+      id
+    );
+    return response;
+  } catch (error) {
+    console.error("Appwrite service :: getMenuItem :: error", error);
+    return null;
+  }
+};
+
+export const getCustomizations = async () => {
+  try {
+    const response = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.CustomizationsCollectionId // Bu koleksiyonu oluşturmanız gerekecek
+    );
+    return response.documents;
+  } catch (error) {
+    console.error("Appwrite service :: getCustomizations :: error", error);
+    return [];
+  }
+};

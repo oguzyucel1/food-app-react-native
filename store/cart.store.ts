@@ -7,10 +7,27 @@ function areCustomizationsEqual(
 ): boolean {
   if (a.length !== b.length) return false;
 
-  const aSorted = [...a].sort((x, y) => x.id.localeCompare(y.id));
-  const bSorted = [...b].sort((x, y) => x.id.localeCompare(y.id));
+  // Null kontrolü ekleyerek localeCompare hatası önleniyor
+  const aSorted = [...a].sort((x, y) => {
+    // Null/undefined kontrolü
+    const xId = x?.id?.toString() || "";
+    const yId = y?.id?.toString() || "";
+    return xId.localeCompare(yId);
+  });
 
-  return aSorted.every((item, idx) => item.id === bSorted[idx].id);
+  const bSorted = [...b].sort((x, y) => {
+    // Null/undefined kontrolü
+    const xId = x?.id?.toString() || "";
+    const yId = y?.id?.toString() || "";
+    return xId.localeCompare(yId);
+  });
+
+  // ID karşılaştırması için de null kontrolü
+  return aSorted.every((item, idx) => {
+    const aId = item?.id?.toString() || "";
+    const bId = bSorted[idx]?.id?.toString() || "";
+    return aId === bId;
+  });
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({

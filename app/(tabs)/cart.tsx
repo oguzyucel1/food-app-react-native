@@ -1,10 +1,11 @@
 import CartItem from "@/components/CartItem";
 import CustomButton from "@/components/CustomButton";
 import CustomHeader from "@/components/CustomHeader";
+import { images } from "@/constants";
 import { useCartStore } from "@/store/cart.store";
 import { PaymentInfoStripeProps } from "@/type";
 import cn from "clsx";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const PaymentInfoStripe = ({
@@ -34,10 +35,24 @@ const Cart = () => {
       <FlatList
         data={items}
         renderItem={({ item }) => <CartItem item={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id || Math.random())} // String'e çevirerek ve fallback ekleyerek güvenli hale getiriyoruz
         contentContainerClassName="pb-28 px-5 pt-5"
         ListHeaderComponent={() => <CustomHeader title="Your Cart" />}
-        ListEmptyComponent={() => <Text>Cart Empty</Text>}
+        ListEmptyComponent={() => (
+          <View className="items-center justify-center mt-16">
+            <Image
+              source={images.emptycart}
+              className="w-40 h-40 object-contain"
+              resizeMode="contain"
+            />
+            <Text className="text-center text-xl font-semibold text-gray-800 mt-6">
+              Your cart is empty
+            </Text>
+            <Text className="text-center text-lg text-gray-500 mt-2 px-10">
+              Add items to your cart to see them here.
+            </Text>
+          </View>
+        )}
         ListFooterComponent={() =>
           totalItems > 0 && (
             <View className="gap-5">

@@ -1,6 +1,7 @@
 import { appwriteConfig } from "@/lib/appwrite";
 import { useCartStore } from "@/store/cart.store";
 import { MenuItem } from "@/type";
+import { router } from "expo-router";
 import { Image, Platform, Text, TouchableOpacity } from "react-native";
 
 const MenuCard = ({
@@ -11,6 +12,13 @@ const MenuCard = ({
   const imageUrl = `${image_url}?project=${appwriteConfig.projectId}`;
   const { addItem } = useCartStore();
 
+  const handleNavigateToDetails = () => {
+    router.push({
+      pathname: "/MenuItemDetails",
+      params: { id: $id },
+    });
+  };
+
   return (
     <TouchableOpacity
       className="menu-card"
@@ -20,11 +28,16 @@ const MenuCard = ({
           : {}
       }
     >
-      <Image
-        source={{ uri: imageUrl }}
-        className="size-32 absolute -top-10"
-        resizeMode="contain"
-      />
+      <TouchableOpacity
+        onPress={handleNavigateToDetails}
+        className=" absolute -top-10"
+      >
+        <Image
+          source={{ uri: imageUrl }}
+          className="size-32"
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <Text
         className="text-center base-bold text-dark-100 mb-2"
         numberOfLines={1}

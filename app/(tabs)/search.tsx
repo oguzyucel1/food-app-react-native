@@ -2,13 +2,14 @@ import CardButton from "@/components/CardButton";
 import Filter from "@/components/Filter";
 import MenuCard from "@/components/MenuCard";
 import SearchBar from "@/components/SearchBar";
+import { images } from "@/constants";
 import { getCategories, getMenu } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
 import { Category, MenuItem } from "@/type";
 import cn from "clsx";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
@@ -68,7 +69,23 @@ const Search = () => {
         numColumns={2}
         columnWrapperClassName="gap-7"
         contentContainerClassName="gap-7 px-5 pb-32"
-        ListEmptyComponent={() => !loading && <Text>No Results</Text>}
+        ListEmptyComponent={() =>
+          !loading && (
+            <View className="items-center justify-center mt-16">
+              <Image
+                source={images.emptyState}
+                className="w-40 h-40 object-contain"
+                resizeMode="contain"
+              />
+              <Text className="text-center text-xl font-semibold text-gray-800 mt-6">
+                Nothing matched your search
+              </Text>
+              <Text className="text-center text-lg text-gray-500 mt-2 px-10">
+                Try searching for something else
+              </Text>
+            </View>
+          )
+        }
       />
     </SafeAreaView>
   );
