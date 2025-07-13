@@ -45,7 +45,7 @@
   }
 
   .custom-header {
-    @apply w-full flex flex-row items-center justify-between mb-10;
+    @apply w-full flex flex-row items-center justify-between mb-10 px-2;
   }
 
   .label {
@@ -109,7 +109,7 @@
   }
 
   .base-semibold {
-    @apply text-lg font-quicksand-semibold;
+    @apply text-xl font-quicksand-semibold;
   }
 
   .base-regular {
@@ -117,7 +117,7 @@
   }
 
   .paragraph-bold {
-    @apply text-base font-quicksand-bold;
+    @apply text-lg font-quicksand-bold;
   }
 
   .paragraph-semibold {
@@ -137,6 +137,6 @@
   }
 
   .small-bold {
-    @apply text-xs font-quicksand-bold;
+    @apply text-lg font-quicksand-bold;
   }
 }

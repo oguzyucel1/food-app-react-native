@@ -114,3 +114,23 @@ export interface Customization {
   type: "topping" | "side";
   image_url?: string;
 }
+
+export interface User {
+  $id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  imageUrl?: string;
+}
+
+// Profil öğesi tipi
+export interface ProfileItemData {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  showArrow?: boolean;
+  onPress?: () => void;
+  isSection?: boolean;
+}

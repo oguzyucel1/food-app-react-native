@@ -156,3 +156,91 @@ export const getCustomizations = async () => {
     return [];
   }
 };
+
+export const logoutUser = async (): Promise<void> => {
+  try {
+    await account.deleteSession("current");
+    return;
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw new Error(error as string);
+  }
+};
+
+/**
+ * Profil fotoğrafı yüklemek için fonksiyon
+ * @param file Yüklenecek dosya (FormData olarak)
+ * @param userId Kullanıcı doküman ID'si
+ * @returns Yüklenen dosya bilgisi
+ */
+export const uploadProfileImage = async (imageUri: string, userId: string) => {
+  try {
+    // Eski profil fotoğrafını kontrol et ve sil
+    const currentUser = await database.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    // Eğer kullanıcının zaten bir profil fotoğrafı varsa, eski dosyayı sil
+    if (currentUser.profileImageId) {
+      try {
+        await storage.deleteFile(
+          appwriteConfig.bucketId,
+          currentUser.profileImageId
+        );
+      } catch (error) {
+        console.log("Eski profil fotoğrafı silinirken hata:", error);
+      }
+    }
+
+    // Dosya adı oluştur
+    const fileId = ID.unique();
+
+    // File.js oluştur - React Native Appwrite SDK bu şekilde kabul eder
+    // Dosya boyutunu almak için react-native-fs veya benzeri bir paket kullanılabilir.
+    // Burada örnek olarak 0 atanıyor, gerçek uygulamada dosya boyutunu alın.
+    const fileStat = await fetch(imageUri);
+    const blob = await fileStat.blob();
+    const fileSize = blob.size;
+
+    const file = {
+      uri: imageUri,
+      name: `profile_${fileId}.jpg`,
+      type: "image/jpeg",
+      size: fileSize,
+    };
+
+    // Dosyayı yükle
+    const uploadedFile = await storage.createFile(
+      appwriteConfig.bucketId,
+      fileId,
+      file
+    );
+
+    // Profil fotoğrafı URL'ini oluştur
+    const fileUrl = getFilePreview(uploadedFile.$id);
+
+    // Kullanıcı dokümanını güncelle
+    await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        profileImageId: uploadedFile.$id,
+        profileImageUrl: fileUrl,
+      }
+    );
+
+    return { fileId: uploadedFile.$id, fileUrl };
+  } catch (error) {
+    console.error("Profil fotoğrafı yükleme hatası:", error);
+    throw error;
+  }
+};
+
+// Dosya önizleme URL'ini alma
+export const getFilePreview = (fileId: string): string => {
+  // React Native için doğru URL formatını döndür
+  return `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${fileId}/view?project=${appwriteConfig.projectId}`;
+};

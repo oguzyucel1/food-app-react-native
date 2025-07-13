@@ -58,6 +58,58 @@ export const useCartStore = create<CartStore>((set, get) => ({
     }
   },
 
+  // Sepete ürün eklemek için
+  addToCart: (product: any) => {
+    set((state) => {
+      // Mevcut sepet öğelerini kopyala
+      const updatedItems = [...state.items];
+
+      // Aynı ürün ve topping'lerle eşleşen öğe var mı diye kontrol et
+      const existingItemIndex = updatedItems.findIndex((item) => {
+        // Ürün ID kontrolü
+        if (item.id !== product.id) return false;
+
+        // Topping'ler yoksa sadece ürün ID'si yeterli
+        if (!item.selectedToppings && !product.selectedToppings) return true;
+
+        // Sadece bir tarafta topping varsa eşleşme yok
+        if (!item.selectedToppings || !product.selectedToppings) return false;
+
+        // Topping sayıları aynı değilse eşleşme yok
+        if (item.selectedToppings.length !== product.selectedToppings.length)
+          return false;
+
+        // Topping ID'lerini karşılaştır
+        const itemToppingIds = item.selectedToppings
+          .map((t: { id: any }) => t.id)
+          .sort();
+        const productToppingIds = product.selectedToppings
+          .map((t: { id: any }) => t.id)
+          .sort();
+
+        // Tüm topping'ler eşleşiyor mu kontrol et
+        return itemToppingIds.every(
+          (id: any, i: string | number) => id === productToppingIds[i]
+        );
+      });
+
+      if (existingItemIndex > -1) {
+        // Eşleşen ürün bulunduysa miktarını artır
+        updatedItems[existingItemIndex].quantity += product.quantity || 1;
+        return { items: updatedItems };
+      } else {
+        // Eşleşen ürün bulunamadıysa yeni ekle
+        const newItem = {
+          ...product,
+          quantity: product.quantity || 1,
+          // Benzersiz cartItemId ekle
+          cartItemId: `${product.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        };
+        return { items: [...updatedItems, newItem] };
+      }
+    });
+  },
+
   removeItem: (id, customizations = []) => {
     set({
       items: get().items.filter(
