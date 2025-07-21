@@ -18,7 +18,18 @@ A modern, feature-rich food ordering application built with React Native, Expo, 
 
 ## 📱 Screenshots
 
-_Add your app screenshots here_
+<p align="center">
+  <img src="assets/screenshots/1.jpeg" alt="Ekran 1" width="30%" />
+  <img src="assets/screenshots/2.jpeg" alt="Ekran 2" width="30%" />
+  <img src="assets/screenshots/8.jpeg" alt="Ekran 3" width="30%" />
+  <img src="assets/screenshots/4.jpeg" alt="Ekran 1" width="30%" />
+  <img src="assets/screenshots/5.jpeg" alt="Ekran 2" width="30%" />
+  <img src="assets/screenshots/6.jpeg" alt="Ekran 3" width="30%" />
+  <img src="assets/screenshots/7.jpeg" alt="Ekran 1" width="30%" />
+  <img src="assets/screenshots/3.jpeg" alt="Ekran 1" width="30%" />
+
+</p>
+
 
 ## ✨ Features
 
