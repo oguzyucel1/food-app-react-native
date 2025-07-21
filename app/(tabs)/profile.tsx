@@ -79,15 +79,17 @@ const ProfileImage = ({
           />
         )}
 
-        {isLoading ? (
-          <View className="absolute w-full h-full rounded-full items-center justify-center bg-black/30">
+        {/* Loading indicator stays inside the image bounds */}
+        {isLoading && (
+          <View className="absolute w-28 h-28 rounded-full items-center justify-center bg-black/30">
             <ActivityIndicator color="#FE8C00" size="large" />
           </View>
-        ) : (
-          <View className="absolute bottom-0 right-0 bg-amber-500 p-2 rounded-full">
-            <Ionicons name="pencil" size={14} color="white" />
-          </View>
         )}
+
+        {/* Pencil icon always shows (not conditional on loading) */}
+        <View className="absolute bottom-0 right-0 bg-amber-500 p-2 rounded-full">
+          <Ionicons name="pencil" size={14} color="white" />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -190,8 +192,6 @@ const Profile = () => {
           profileImageUrl: currentUser.profileImageUrl ?? "",
           $permissions: [],
         };
-
-        console.log("Formatted image URL:", userData.imageUrl);
 
         // Sadece veri değişmişse state'i güncelle
         if (JSON.stringify(user) !== JSON.stringify(userData)) {
